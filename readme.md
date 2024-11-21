@@ -21,8 +21,10 @@
 /search -> Search
 
 / users로 시작하는 페이지 라우팅 => 라우터
+/users/logout -> Logout User
 /user/edit -> Edit User
 /user/delete -> Delete User
+/user/:id -> Segment User
 
 / video로 시작하는 페이지 라우팅 => 라우터
 /video/watch -> Watch Video
@@ -30,3 +32,5 @@
 /video/delete -> Delete Video
 /video/comments -> Comment Video
 /video/comments/delete -> Delete Comment
+
+# node-reloaded
