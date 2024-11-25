@@ -1,40 +1,42 @@
-const fakeUser = {
-  userName: "BBO",
-  loggedIn: false,
-};
+// const videos = [
+//   {
+//     id: 1,
+//     title: "First Video",
+//     createdAt: "2 minutes ago",
+//     views: 1,
+//     comment: 2,
+//     rating: 5,
+//   },
+//   {
+//     id: 2,
+//     title: "Second Video",
+//     createdAt: "2 minutes ago",
+//     views: 59,
+//     comment: 2,
+//     rating: 5,
+//   },
+//   {
+//     id: 3,
+//     title: "Third Video",
+//     createdAt: "2 minutes ago",
+//     views: 59,
+//     comment: 2,
+//     rating: 5,
+//   },
+// ];
 
-const videos = [
-  {
-    id: 1,
-    title: "First Video",
-    createdAt: "2 minutes ago",
-    views: 1,
-    comment: 2,
-    rating: 5,
-  },
-  {
-    id: 2,
-    title: "Second Video",
-    createdAt: "2 minutes ago",
-    views: 59,
-    comment: 2,
-    rating: 5,
-  },
-  {
-    id: 3,
-    title: "Third Video",
-    createdAt: "2 minutes ago",
-    views: 59,
-    comment: 2,
-    rating: 5,
-  },
-];
+import { response } from "express";
+import videoModel from "../models/video";
 
-export const trending = (req, res) => {
-  res.render("home", { pageTitle: "Home", home: "Home", videos });
+export const home = async (req, res) => {
+  try {
+    const videos = await video.find({});
+    return res.render("home", { pageTitle: "Home", videos: [] });
+  } catch (error) {
+    return res.render("server-error", { error });
+  }
 };
 export const search = (req, res) => res.send("Search Videos");
-
 export const watch = (req, res) => {
   const { id } = req.params;
   const video = videos[id - 1];
@@ -57,17 +59,19 @@ export const getUpload = (req, res) => {
   return res.render("upload", { pageTitle: "Upload Video" });
 };
 
-export const postUpload = (req, res) => {
-  const { title } = req.body;
-  const newVideo = {
-    id: videos.length + 1,
-    title, // 객체의 키와 발루 값이 같으니 하나로 축약!
-    createdAt: "Just Now",
-    views: 0,
-    comment: 0,
-    rating: 0,
-  };
-  videos.push(newVideo);
+export const postUpload = async (req, res) => {
+  const { title, description, hashtags } = req.body;
+  const video = new Video({
+    title,
+    description,
+    createdAt: Date.now(),
+    hashtags: hashtags.split(",").map((word) => `#{word}`),
+    meta: {
+      views: 0,
+      rating: 0,
+    },
+  });
+  const dbvideo = await video.save();
   return res.redirect("/");
 };
 

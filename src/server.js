@@ -4,10 +4,6 @@ import globalRouter from "./routers/globalRouter";
 import userRouter from "./routers/userRouter";
 import videoRouter from "./routers/videoRouter";
 
-const PORT = 4000;
-
-console.log(process.cwd());
-
 const app = express();
 const logger = morgan("dev");
 
@@ -23,7 +19,4 @@ app.use("/videos", videoRouter);
 // app.get("/", handleHome); // "/users" 경로는 userRouter에서 처리
 // app.get("/protected", handelProtected); // "/video" 경로는 videoRouter에서 처리
 
-const handleListening = () =>
-  console.log(`☃ Server Listning on Port http://localhost:${PORT} ☃`);
-
-app.listen(4000, handleListening);
+export default app;
