@@ -1,42 +1,25 @@
-// const videos = [
-//   {
-//     id: 1,
-//     title: "First Video",
-//     createdAt: "2 minutes ago",
-//     views: 1,
-//     comment: 2,
-//     rating: 5,
-//   },
-//   {
-//     id: 2,
-//     title: "Second Video",
-//     createdAt: "2 minutes ago",
-//     views: 59,
-//     comment: 2,
-//     rating: 5,
-//   },
-//   {
-//     id: 3,
-//     title: "Third Video",
-//     createdAt: "2 minutes ago",
-//     views: 59,
-//     comment: 2,
-//     rating: 5,
-//   },
-// ];
 import Video from "../models/video";
-
-import { formHashtags } from "../models/video";
 
 export const home = async (req, res) => {
   try {
-    const videos = await Video.find({});
+    const videos = await Video.find({}).sort({ createdAt: "desc" });
     return res.render("home", { pageTitle: "Home", videos });
   } catch (error) {
     return res.render("server-error", { error });
   }
 };
-export const search = (req, res) => res.send("Search Video");
+export const search = async (req, res) => {
+  const { keyword } = req.query;
+  let videos = [];
+  if (keyword) {
+    videos = await Video.find({
+      title: {
+        $regex: new RegExp(keyword, "i"),
+      },
+    });
+  }
+  return res.render("search", { pageTitle: "Search", videos });
+};
 export const watch = async (req, res) => {
   const { id } = req.params;
   const video = await Video.findById(id);
@@ -66,7 +49,7 @@ export const postEdit = async (req, res) => {
   await Video.findByIdAndUpdate(id, {
     title,
     description,
-    hashtags: formHashtags(hashtags),
+    hashtags: Video.formatHashtags(hashtags),
   });
   return res.redirect(`/videos/${id}`);
 };
@@ -81,11 +64,10 @@ export const postUplold = async (req, res) => {
     await Video.create({
       title,
       description,
-      hashtags: formHashtags(hashtags),
+      hashtags: Video.formatHashtags(hashtags),
     });
     return res.redirect("/");
   } catch (error) {
-    console.error(error);
     return res.render("upload", {
       pageTitle: "Upload Video",
       errorMessage: error._message,
@@ -93,7 +75,8 @@ export const postUplold = async (req, res) => {
   }
 };
 
-export const deleteVideo = (req, res) => {
-  console.log(req.params);
-  return res.send("Delete Video");
+export const deleteVideo = async (req, res) => {
+  const { id } = req.params;
+  await Video.findByIdAndDelete(id);
+  return res.redirect("/");
 };
