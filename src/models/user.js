@@ -2,16 +2,32 @@ import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 
 const userSchema = new mongoose.Schema({
-  email: { type: String, require: true, unique: true },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  avatarUrl: String,
   socialOnly: {
     type: Boolean,
     default: false,
   },
-  avatarUrl: String,
-  username: { type: String, require: true, unique: true },
-  password: { type: String },
-  name: { type: String, require: true },
-  location: { type: String },
+  username: {
+    type: String,
+    // required: true,
+    unique: true,
+  },
+  password: {
+    type: String,
+  },
+  name: {
+    type: String,
+    required: true,
+  },
+  location: {
+    type: String,
+  },
+  videos: [{ type: mongoose.Schema.Types.ObjectId, ref: "Video" }],
 });
 
 userSchema.pre("save", async function () {
@@ -19,5 +35,4 @@ userSchema.pre("save", async function () {
 });
 
 const User = mongoose.model("User", userSchema);
-
 export default User;

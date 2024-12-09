@@ -2,11 +2,12 @@ import User from "../models/user";
 import bcrypt from "bcrypt";
 
 export const getJoin = (req, res) => res.render("join", { pageTitle: "Join" });
+
 export const postJoin = async (req, res) => {
   const { email, username, password, password1, name, location } = req.body;
   const pageTitle = "Join";
 
-  if (password1 !== password) {
+  if (password !== password1) {
     return res.status(400).render("join", {
       pageTitle,
       errorMessage: "Password confirmation does not match",
@@ -15,9 +16,9 @@ export const postJoin = async (req, res) => {
 
   const exists = await User.exists({ $or: [{ username }, { email }] });
   if (exists) {
-    return res.status(400).render("Join", {
+    return res.status(400).render("join", {
       pageTitle,
-      errorMessage: "This username/email is already taken",
+      errorMessage: "This username/email is already Taken.",
     });
   }
 
@@ -29,7 +30,7 @@ export const postJoin = async (req, res) => {
       name,
       location,
     });
-    res.redirect("/login");
+    return res.redirect("/login");
   } catch (error) {
     return res.status(400).render("join", {
       pageTitle,
@@ -37,28 +38,29 @@ export const postJoin = async (req, res) => {
     });
   }
 };
+
 export const startGithubLogin = (req, res) => {
   const baseUrl = "https://github.com/login/oauth/authorize";
   const config = {
-    client_id: process.env.GITHUB_CLIENT,
+    client_id: process.env.GH_CLIENT,
     allow_signup: false,
     scope: "read:user user:email",
   };
   const params = new URLSearchParams(config).toString();
   const finalUrl = `${baseUrl}?${params}`;
-
   return res.redirect(finalUrl);
 };
+
 export const finishGithubLogin = async (req, res) => {
   const baseUrl = "https://github.com/login/oauth/access_token";
   const config = {
-    client_id: process.env.GITHUB_CLIENT,
-    client_secret: process.env.GITHUB_SECRET,
+    client_id: process.env.GH_CLIENT,
+    client_secret: process.env.GH_SECRET,
     code: req.query.code,
   };
   const params = new URLSearchParams(config).toString();
   const finalUrl = `${baseUrl}?${params}`;
-  const tokenRequest = await (
+  const tonkenRequest = await (
     await fetch(finalUrl, {
       method: "POST",
       headers: {
@@ -66,9 +68,9 @@ export const finishGithubLogin = async (req, res) => {
       },
     })
   ).json();
-  if ("access_token" in tokenRequest) {
-    const { access_token } = tokenRequest;
-    const apiUrl = "https://api.github.com";
+  if ("access_token" in tonkenRequest) {
+    const { access_token } = tonkenRequest;
+    const apiUrl = " https://api.github.com";
     const userData = await (
       await fetch(`${apiUrl}/user`, {
         headers: {
@@ -98,8 +100,8 @@ export const finishGithubLogin = async (req, res) => {
     } else {
       const user = await User.create({
         email: emailObj.email,
-        socialOnly: true,
         avatarUrl: userData.avatar_url,
+        socialOnly: true,
         username: userData.login,
         password: "",
         name: userData.name,
@@ -113,17 +115,21 @@ export const finishGithubLogin = async (req, res) => {
     return res.redirect("/login");
   }
 };
+
 export const getEdit = (req, res) => {
   return res.render("edit-profile", { pageTitle: "Edit Profile" });
 };
+
 export const postEdit = async (req, res) => {
   const {
     session: {
-      user: { _id, email: sessionEmail, username: sessionUsername },
+      user: { _id, avatarUrl, email: sessionEmail, username: sessionUsername },
     },
     body: { name, email, username, location },
+    file,
   } = req;
 
+  console.log(file);
   const usernameExists =
     username !== sessionUsername ? await User.exists({ username }) : undefined;
 
@@ -140,24 +146,27 @@ export const postEdit = async (req, res) => {
     });
   }
 
-  const updateUser = await User.findByIdAndUpdate(
+  const updatedUser = await User.findByIdAndUpdate(
     _id,
     {
+      avatarUrl: file ? file.path.replace(/\\/g, "/") : avatarUrl,
       name,
       email,
       username,
       location,
     },
-    {
-      new: true,
-    }
+    { new: true }
   );
 
-  req.session.user = updateUser;
+  req.session.user = updatedUser;
   return res.redirect("/users/edit");
 };
+
 export const getLogin = (req, res) =>
-  res.render("login", { pageTitle: "Login" });
+  res.render("login", {
+    pageTitle: "Login",
+  });
+
 export const postLogin = async (req, res) => {
   const { username, password } = req.body;
   const pageTitle = "Login";
@@ -179,8 +188,55 @@ export const postLogin = async (req, res) => {
   req.session.user = user;
   return res.redirect("/");
 };
+
 export const logout = (req, res) => {
   req.session.destroy();
   return res.redirect("/");
 };
-export const see = (req, res) => res.send("see");
+
+export const getChangePassword = (req, res) => {
+  if (req.session.user.socialOnly === true) {
+    return res.redirect("/");
+  }
+  return res.render("users/change-password", { pageTitle: "Change Password" });
+};
+
+export const postChangePassword = async (req, res) => {
+  const {
+    session: {
+      user: { _id },
+    },
+    body: { oldPassword, newPassword, newPasswordConfirmation },
+  } = req;
+  const user = await User.findById(_id);
+  const ok = await bcrypt.compare(oldPassword, user.password);
+  if (!ok) {
+    return res.status(400).render("users/change-password", {
+      pageTitle: "Change Password",
+      errorMessage: "The Current Password is incorrect",
+    });
+  }
+
+  if (newPassword !== newPasswordConfirmation) {
+    return res.status(400).render("users/change-password", {
+      pageTitle: "Change Password",
+      errorMessage: "The Password does not match the confirmation",
+    });
+  }
+  user.password = newPassword;
+  await user.save();
+  req.session.user.password = user.password;
+  return res.redirect("/users/logout");
+};
+
+export const see = async (req, res) => {
+  const { id } = req.params;
+  const user = await User.findById(id).populate("videos");
+  if (!user) {
+    return res.status(404).render("404", { pageTitle: "User not Found." });
+  }
+  return res.render("users/profile", {
+    pageTitle: `${user.name} Profile`,
+    user,
+  });
+};
