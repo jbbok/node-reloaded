@@ -1,0 +1,227 @@
+/*!*********************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js!./src/client/scss/style.scss ***!
+  \*********************************************************************************************************************/
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+ul,
+li {
+  list-style: none;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+header {
+  padding: 20px 50px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+header .header__logo {
+  color: #ff1300;
+  font-size: 38px;
+}
+header ul {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 25px;
+}
+header ul li {
+  margin-left: 30px;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+header ul i {
+  font-size: 16px;
+}
+header ul .header__btn {
+  background: #fff;
+  color: #191919;
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+header ul .header__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+footer {
+  text-align: center;
+  font-size: 12px;
+  opacity: 0.8;
+  margin-top: 50px;
+}
+
+.video-mixin .video-mixin__thumb {
+  width: 100%;
+  height: 140px;
+  background: ivory;
+  border-radius: 7px;
+}
+.video-mixin .video-mixin__data {
+  padding: 0 15px;
+}
+.video-mixin .video-mixin__data .video-mixin__title {
+  font-size: 16px;
+  display: block;
+  margin-top: 10px;
+}
+.video-mixin .video-mixin__data .video-mixin__meta {
+  margin-top: 5px;
+  font-size: 12px;
+}
+
+.empty__message {
+  font-size: 18px;
+  margin-bottom: 50px;
+}
+
+.video__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 50px;
+}
+
+.auth-switch {
+  text-align: center;
+  margin-top: 40px;
+}
+.auth-switch a {
+  text-decoration: underline;
+}
+
+.avatar {
+  width: 150px;
+  height: 150px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+}
+
+form {
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 30px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
+
+input:not(input[type=range]) {
+  width: 100%;
+  margin-bottom: 5px;
+  padding: 15px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #000;
+  color: #fff;
+  font-size: 16px;
+}
+input:not(input[type=range])::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+input[type=submit],
+.social__btn {
+  padding: 12px 20px;
+  background: rgba(255, 19, 0, 0.9);
+  text-align: center;
+  display: block;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.social__login {
+  margin-top: 50px;
+  padding-top: 50px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+.social__login .social__btn--github {
+  background: #24883b;
+}
+
+.videos__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 50px;
+}
+
+.search__form {
+  display: flex;
+  margin-bottom: 60px;
+  position: relative;
+}
+.search__form input {
+  margin-bottom: 5px;
+  padding: 15px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 5px;
+  background: #000;
+  color: #fff;
+  cursor: pointer;
+}
+.search__form input[type=text] {
+  width: 100%;
+}
+.search__form button {
+  background: transparent;
+  text-align: center;
+  padding: 10px;
+  cursor: pointer;
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-60%);
+  border: none;
+  font-size: 18px;
+  color: #ff1300;
+}
+
+.profile__data {
+  max-width: 420px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 50px;
+}
+.profile__data img {
+  margin-bottom: 10px;
+}
+.profile__data h3 {
+  font-size: 18px;
+}
+
+.edit-profile__form label {
+  font-size: 14px;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.edit-profile__password {
+  margin-top: 50px;
+  text-align: center;
+}
+.edit-profile__password a {
+  text-decoration: underline;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  background: #191919;
+  color: #fff;
+}
+
+main {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  margin-top: 50px;
+}

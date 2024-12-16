@@ -1,11 +1,27 @@
+import { populate } from "dotenv";
 import User from "../models/user";
-import bcrypt from "bcrypt";
 import Video from "../models/video";
+import bcrypt from "bcrypt";
 
 export const getJoin = (req, res) => res.render("join", { pageTitle: "Join" });
-
 export const postJoin = async (req, res) => {
   const { email, username, password, password1, name, location } = req.body;
+
+  /*const usernameExists = await User.exists({ username });
+  if (usernameExists) {
+    return res.render("join", {
+      pageTitle,
+      errorMessage: "This username is already taken",
+    });
+  }
+  const emailExists = await User.exists({ email });
+  if (emailExists) {
+    return res.render("join", {
+      pageTitle,
+      errorMessage: "This useremail is already taken",
+    });
+  }*/
+
   const pageTitle = "Join";
 
   if (password !== password1) {
@@ -16,10 +32,11 @@ export const postJoin = async (req, res) => {
   }
 
   const exists = await User.exists({ $or: [{ username }, { email }] });
+  // exists는 객체의 매개변수를 받는데 $or은 []안에 있는 둘중에 하나만 있으면 true반환
   if (exists) {
     return res.status(400).render("join", {
       pageTitle,
-      errorMessage: "This username/email is already Taken.",
+      errorMessage: "This username/email is already Taken",
     });
   }
 
@@ -39,7 +56,6 @@ export const postJoin = async (req, res) => {
     });
   }
 };
-
 export const startGithubLogin = (req, res) => {
   const baseUrl = "https://github.com/login/oauth/authorize";
   const config = {
@@ -49,6 +65,7 @@ export const startGithubLogin = (req, res) => {
   };
   const params = new URLSearchParams(config).toString();
   const finalUrl = `${baseUrl}?${params}`;
+
   return res.redirect(finalUrl);
 };
 
@@ -68,7 +85,8 @@ export const finishGithubLogin = async (req, res) => {
         Accept: "application/json",
       },
     })
-  ).json();
+  ).json(); // post 방식으로 가져오므로
+
   if ("access_token" in tonkenRequest) {
     const { access_token } = tonkenRequest;
     const apiUrl = " https://api.github.com";
@@ -79,6 +97,7 @@ export const finishGithubLogin = async (req, res) => {
         },
       })
     ).json();
+
     const emailData = await (
       await fetch(`${apiUrl}/user/emails`, {
         headers: {
@@ -86,14 +105,16 @@ export const finishGithubLogin = async (req, res) => {
         },
       })
     ).json();
+
     const emailObj = emailData.find(
       (email) => email.primary === true && email.verified === true
     );
+
     if (!emailObj) {
       return res.redirect("/login");
     }
     const existingUser = await User.findOne({ email: emailObj.email });
-
+    console.log(existingUser);
     if (existingUser) {
       req.session.loggedIn = true;
       req.session.user = existingUser;
@@ -105,7 +126,7 @@ export const finishGithubLogin = async (req, res) => {
         socialOnly: true,
         username: userData.login,
         password: "",
-        name: userData.name,
+        name: userData.login,
         location: userData.location,
       });
       req.session.loggedIn = true;
@@ -122,6 +143,8 @@ export const getEdit = (req, res) => {
 };
 
 export const postEdit = async (req, res) => {
+  // const { user } = req.session; // 스키마에 있는 원래 값
+  // const { name, email, username, location } = req.body; // 화면에서 받아온 값
   const {
     session: {
       user: { _id, avatarUrl, email: sessionEmail, username: sessionUsername },
@@ -130,16 +153,16 @@ export const postEdit = async (req, res) => {
     file,
   } = req;
 
-  const usernameExists =
+  const uernameExists =
     username !== sessionUsername ? await User.exists({ username }) : undefined;
 
   const emailExists =
     email !== sessionEmail ? await User.exists({ email }) : undefined;
 
-  if (usernameExists || emailExists) {
-    return res.status(400).render("edit-profile", {
+  if (uernameExists || emailExists) {
+    return res.status(400).render("edit-profile0", {
       pageTitle: "Edit Profile",
-      usernameErrorMessage: usernameExists
+      usernameErrorMessage: uernameExists
         ? "This username is already taken"
         : 0,
       emailErrorMessage: emailExists ? "This email is already taken" : 0,
@@ -157,8 +180,10 @@ export const postEdit = async (req, res) => {
     },
     { new: true }
   );
+  // window의 경우에는 uploads\\ 역슬래시 1개 들어감, mac은 / 하나만 들어감
 
   req.session.user = updatedUser;
+
   return res.redirect("/users/edit");
 };
 
@@ -209,6 +234,7 @@ export const postChangePassword = async (req, res) => {
     body: { oldPassword, newPassword, newPasswordConfirmation },
   } = req;
   const user = await User.findById(_id);
+
   const ok = await bcrypt.compare(oldPassword, user.password);
   if (!ok) {
     return res.status(400).render("users/change-password", {
@@ -217,12 +243,6 @@ export const postChangePassword = async (req, res) => {
     });
   }
 
-  if (newPassword !== newPasswordConfirmation) {
-    return res.status(400).render("users/change-password", {
-      pageTitle: "Change Password",
-      errorMessage: "The Password does not match the confirmation",
-    });
-  }
   user.password = newPassword;
   await user.save();
   req.session.user.password = user.password;
@@ -234,10 +254,11 @@ export const see = async (req, res) => {
   const user = await User.findById(id).populate({
     path: "videos",
     populate: {
-      path: "owner",
+      path: "owner", 
       model: "User",
-    },
-  });
+  },
+});
+  console.log(user);
   if (!user) {
     return res.status(404).render("404", { pageTitle: "User not Found." });
   }
